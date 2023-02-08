@@ -11,7 +11,7 @@
 // or use VARIANT environment variable for example like "make -e VARIANT=VARIANT_NUNCHUK". Select only one at a time.
 #if !defined(PLATFORMIO)
   //#define VARIANT_ADC         // Variant for control via ADC input
- #define VARIANT_USART       // Variant for Serial control via USART3 input
+  //#define VARIANT_USART       // Variant for Serial control via USART3 input
   //#define VARIANT_NUNCHUK     // Variant for Nunchuk controlled vehicle build
   //#define VARIANT_PPM         // Variant for RC-Remote with PPM-Sum Signal
   //#define VARIANT_PWM         // Variant for RC-Remote with PWM Signal
@@ -35,7 +35,7 @@
 #define TIMEOUT                20     // number of wrong / missing input commands before emergency off
 #define A2BIT_CONV             50     // A to bit for current conversion on ADC. Example: 1 A = 50, 2 A = 100, etc
 // #define PRINTF_FLOAT_SUPPORT          // [-] Uncomment this for printf to support float on Serial Debug. It will increase code size! Better to avoid it!
-  
+
 // ADC conversion time definitions
 #define ADC_CONV_TIME_1C5       (14)  //Total ADC clock cycles / conversion = (  1.5+12.5)
 #define ADC_CONV_TIME_7C5       (20)  //Total ADC clock cycles / conversion = (  7.5+12.5)
@@ -125,7 +125,6 @@
  * 1. The Field Weakening is a linear interpolation from 0 to FIELD_WEAK_MAX or PHASE_ADV_MAX (depeding if FOC or SIN is selected, respectively)
  * 2. The Field Weakening starts engaging at FIELD_WEAK_LO and reaches the maximum value at FIELD_WEAK_HI
  * 3. If you re-calibrate the Field Weakening please take all the safety measures! The motors can spin very fast!
-
    Inputs:
     - input1[inIdx].cmd and input2[inIdx].cmd: normalized input values. INPUT_MIN to INPUT_MAX
     - button1 and button2: digital input values. 0 or 1
@@ -152,9 +151,9 @@
 #define DIAG_ENA        1               // [-] Motor Diagnostics enable flag: 0 = Disabled, 1 = Enabled (default)
 
 // Limitation settings
-#define I_MOT_MAX       17              // [A] Maximum single motor current limit
-#define I_DC_MAX        19              // [A] Maximum stage2 DC Link current limit for Commutation and Sinusoidal types (This is the final current protection. Above this value, current chopping is applied. To avoid this make sure that I_DC_MAX = I_MOT_MAX + 2A)
-#define N_MOT_MAX       1500            // [rpm] Maximum motor speed limit
+#define I_MOT_MAX       15              // [A] Maximum single motor current limit
+#define I_DC_MAX        17              // [A] Maximum stage2 DC Link current limit for Commutation and Sinusoidal types (This is the final current protection. Above this value, current chopping is applied. To avoid this make sure that I_DC_MAX = I_MOT_MAX + 2A)
+#define N_MOT_MAX       1000            // [rpm] Maximum motor speed limit
 
 // Field Weakening / Phase Advance
 #define FIELD_WEAK_ENA  0               // [-] Field Weakening / Phase Advance enable flag: 0 = Disabled (default), 1 = Enabled
@@ -197,12 +196,13 @@
 
 // ############################## INPUT FORMAT ############################
 /* ***_INPUT: TYPE, MIN, MID, MAX, DEADBAND
- * -----------------------------------------*
+ * -----------------------------------------
  * TYPE:      0:Disabled, 1:Normal Pot, 2:Middle Resting Pot, 3:Auto-detect
  * MIN:       min ADC1-value while poti at minimum-position (0 - 4095)
  * MID:       mid ADC1-value while poti at mid-position (INPUT_MIN - INPUT_MAX)
  * MAX:       max ADC2-value while poti at maximum-position (0 - 4095)
  * DEADBAND:  how much of the center position is considered 'center' (100 = values -100 to 100 are considered 0)
+ * 
  * Dual-inputs
  * PRI_INPUT: Primary   Input. These limits will be used for the input with priority 0
  * AUX_INPUT: Auxiliary Input. These limits will be used for the input with priority 1
@@ -237,7 +237,6 @@
  * DEBUG ASCII output is:
  * // "in1:345 in2:1337 cmdL:0 cmdR:0 BatADC:0 BatV:0 TempADC:0 Temp:0\r\n"
  *
- *
  * in1:     (int16_t)input1[inIdx].raw);                                        raw input1: ADC1, UART, PWM, PPM, iBUS
  * in2:     (int16_t)input2[inIdx].raw);                                        raw input2: ADC2, UART, PWM, PPM, iBUS
  * cmdL:    (int16_t)cmdL);                                                     output command Left: [-1000, 1000]
@@ -250,8 +249,8 @@
 */
 
 // #define DEBUG_SERIAL_USART2          // left sensor board cable, disable if ADC or PPM is used!
-#define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
-#define DEBUG_SERIAL_PROTOCOL        // uncomment this to send user commands to the board, change parameters and print specific signals (see comms.c for the user commands)
+// #define DEBUG_SERIAL_USART3          // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+// #define DEBUG_SERIAL_PROTOCOL        // uncomment this to send user commands to the board, change parameters and print specific signals (see comms.c for the user commands)
 // ########################### END OF DEBUG SERIAL ############################
 
 
@@ -286,12 +285,12 @@
   #define CONTROL_ADC           0         // use ADC as input. Number indicates priority for dual-input. Disable CONTROL_SERIAL_USART2, FEEDBACK_SERIAL_USART2, DEBUG_SERIAL_USART2!
 
   // #define DUAL_INPUTS                     //  ADC*(Primary) + UART(Auxiliary). Uncomment this to use Dual-inputs
-  // #define PRI_INPUT1            3, 0, 0, 4095, 0      // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  // #define PRI_INPUT2            3, 0, 0, 4095, 0      // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  // #ifdef DUAL_INPUTS
+  #define PRI_INPUT1            3, 0, 0, 4095, 0      // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
+  #define PRI_INPUT2            3, 0, 0, 4095, 0      // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
+  #ifdef DUAL_INPUTS
     #define FLASH_WRITE_KEY     0x1101    // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
-    #define SIDEBOARD_SERIAL_USART3 1
-    //#define CONTROL_SERIAL_USART3 1       // right sensor board cable. Number indicates priority for dual-input. Disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
+    // #define SIDEBOARD_SERIAL_USART3 1
+    #define CONTROL_SERIAL_USART3 1       // right sensor board cable. Number indicates priority for dual-input. Disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
     #define FEEDBACK_SERIAL_USART3        // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
     #define AUX_INPUT1          3, -1000, 0, 1000, 0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
     #define AUX_INPUT2          3, -1000, 0, 1000, 0  // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
@@ -312,17 +311,17 @@
 // ############################ VARIANT_USART SETTINGS ############################
 #ifdef VARIANT_USART
   // #define SIDEBOARD_SERIAL_USART2 0
-  #define CONTROL_SERIAL_USART2  0    // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
-  #define FEEDBACK_SERIAL_USART2      // left sensor board cable, disable if ADC or PPM is used!
+  // #define CONTROL_SERIAL_USART2  0    // left sensor board cable, disable if ADC or PPM is used! For Arduino control check the hoverSerial.ino
+  // #define FEEDBACK_SERIAL_USART2      // left sensor board cable, disable if ADC or PPM is used!
 
   #define SIDEBOARD_SERIAL_USART3 0
   #define CONTROL_SERIAL_USART3  0    // right sensor board cable. Number indicates priority for dual-input. Disable if I2C (nunchuk or lcd) is used! For Arduino control check the hoverSerial.ino
-  #define FEEDBACK_SERIAL_USART3      // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
+  // #define FEEDBACK_SERIAL_USART3      // right sensor board cable, disable if I2C (nunchuk or lcd) is used!
  
   // #define DUAL_INPUTS                 //  UART*(Primary) + SIDEBOARD(Auxiliary). Uncomment this to use Dual-inputs
-  // #define PRI_INPUT1             3, -1000, 0, 1000, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  // #define PRI_INPUT2             3, -1000, 0, 1000, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
-  // #ifdef DUAL_INPUTS
+  #define PRI_INPUT1             3, -1000, 0, 1000, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
+  #define PRI_INPUT2             3, -1000, 0, 1000, 0     // TYPE, MIN, MID, MAX, DEADBAND. See INPUT FORMAT section
+  #ifdef DUAL_INPUTS
     #define FLASH_WRITE_KEY      0x1102  // Flash memory writing key. Change this key to ignore the input calibrations from the flash memory and use the ones in config.h
     // #define SIDEBOARD_SERIAL_USART2 1   // left sideboard
     #define SIDEBOARD_SERIAL_USART3 1   // right sideboard
@@ -795,4 +794,5 @@
 // ############################# END OF VALIDATE SETTINGS ############################
 
 #endif
+
 
